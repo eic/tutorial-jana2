@@ -16,9 +16,22 @@ Plugins are the basic building blocks when it comes to analyzing data.  They req
 
 To do this we will use the eicmkplugin.py script that comes with EICrecon.  This utility should be your "go-to" for jumpstarting your work with EICrecon/JANA. 
 
-The jana-generate script can be called simply by typing: "eicmkplugin.py" followed by the name of the plugin. Let's begin by calling: "eicmkplugin.py  myPlugin".  After a moment there should now exist a new folder labeled "myPlugin". That directory contains 2 files: a CMakelists.txt file (needed for compiling our new plugin) and the source code for the plugin itself. 
+The eickmkplugin script can be called simply by typing: "eicmkplugin.py" followed by the name of the plugin. Let's begin by calling: "eicmkplugin.py  myPlugin".  After a moment there should now exist a new folder labeled "myPlugin". That directory contains 2 files: a CMakelists.txt file (needed for compiling our new plugin) and the source code for the plugin itself. 
 
 Inside the source code for your plugin is a fairly simple class.  The private data members should contain the necessary variables to successfully run your plugin;  this will likely include any histograms, canvases, fits or other accoutrement. The public section contains the required Constructor, Init, Process, and Finish functions.  In the constructor we need to supply JANA the name of our plugin.  In init we get the application, as well as initialize any variables or histograms (etc etc).  The Process function typically gets objects from the event and does something with them (e.g. fill the histogram of cluster energy). And finally Finish is called where we clean up and do final things like writing the resulting root files.
+
+To begin, start by setting your EICrecon_MY environment variable to a directory where you have write permission. The build instructinos will install the plugin to that directory. When eicrecon is run, it will also look for plugins in the $EICrecon_MY directory and the EICrecon build you are using.
+
+~~~
+mkdir EICrecon_MY
+export EICrecon_MY=${PWD}/EICrecon_MY
+~~~
+
+To generate a plugin, do the following:
+~~~
+eicmkplugin.py myFirstPlugin
+cmake -S myFirstPlugin -B myFirstPlugin/build
+cmake --build myFirstPlugin/build --target install
 
 
 
