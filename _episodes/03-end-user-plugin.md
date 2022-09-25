@@ -14,11 +14,11 @@ keypoints:
 ---
 Plugins are the basic building blocks when it comes to analyzing data.  They request objects and perform actions, such as making histograms, or writing out certain objects to files.  When your plugin requests objects (e.g. clusters) the factory responsible for the requested object is loaded and run (We will dive into factories in the next exciting episode of how to use JANA).  When running EICrecon you will configure it to use some number of plugins (each potentially with their own set of configuration parameters). Now, let us begin constructing a new plugin.
 
-To do this we will use the eicmkplugin.py script that comes with EICrecon.  This utility should be your "go-to" for jumpstarting your work with EICrecon/JANA. 
+To do this we will use the eicmkplugin.py script that comes with EICrecon.  This utility should be your "go-to" for jumpstarting your work with EICrecon/JANA when it comes to data. 
 
 The eickmkplugin script can be called simply by typing: "eicmkplugin.py" followed by the name of the plugin. Let's begin by calling: "eicmkplugin.py  myPlugin".  After a moment there should now exist a new folder labeled "myPlugin". That directory contains 2 files: a CMakelists.txt file (needed for compiling our new plugin) and the source code for the plugin itself. 
 
-Inside the source code for your plugin is a fairly simple class.  The private data members should contain the necessary variables to successfully run your plugin;  this will likely include any histograms, canvases, fits or other accoutrement. The public section contains the required Constructor, Init, Process, and Finish functions.  In the constructor we need to supply JANA the name of our plugin.  In init we get the application, as well as initialize any variables or histograms (etc etc).  The Process function typically gets objects from the event and does something with them (e.g. fill the histogram of cluster energy). And finally Finish is called where we clean up and do final things like writing the resulting root files.
+Inside the source code for your plugin is a fairly simple class.  The private data members should contain the necessary variables to successfully run your plugin;  this will likely include any histograms, canvases, fits or other accoutrement. The public section contains the required Constructor, Init, Process, and Finish functions.  In init we get the application, as well as initialize any variables or histograms (etc etc).  The Process function typically gets objects from the event and does something with them (e.g. fill the histogram of cluster energy). And finally Finish is called where we clean up and do final things like writing the resulting root files.
 
 To begin, start by setting your EICrecon_MY environment variable to a directory where you have write permission. The build instructinos will install the plugin to that directory. When eicrecon is run, it will also look for plugins in the $EICrecon_MY directory and the EICrecon build you are using.
 
@@ -30,6 +30,27 @@ export EICrecon_MY=${PWD}/EICrecon_MY
 To generate a plugin, do the following:
 ~~~
 eicmkplugin.py myFirstPlugin
+~~~
+Note: in order to acess the eicmkplugin.py script, you must have sourced the EICrecon setup script.  If you have not done so, do so now by typing: 
+~~~
+source EICrecon/bin/eicrecon-this.sh
+~~~
+You should have terminal output that looks like this:
+~~~
+Writing myFirstPlugin/CMakeLists.txt ...
+Writing myFirstPlugin/myFirstPluginProcessor.h ...
+Writing myFirstPlugin/myFirstPluginProcessor.cc ...
+
+Created plugin myFirstPlugin.
+Build with:
+
+  cmake -S myFirstPlugin -B myFirstPlugin/build
+  cmake --build myFirstPlugin/build --target install
+~~~
+
+Additionally, you should now have a directory called "myFirstPlugin" in your current working directory.  This directory contains the source code for your plugin, as well as a CMakeLists.txt file.  The CMakeLists.txt file is used to compile your plugin.  
+To compile your plugin, let's follow the guidance given and type:
+~~~
 cmake -S myFirstPlugin -B myFirstPlugin/build
 cmake --build myFirstPlugin/build --target install
 ~~~
@@ -37,6 +58,10 @@ cmake --build myFirstPlugin/build --target install
 You can test plugin installed and can load correctly by runnign eicrecon with it: 
 ~~~
 eicrecon -Pplugins=myFirstPlugin,JTest -Pjana:nevents=10
+~~~
+If you recieve an error that the plugin is not found your JANA_PLUGIN_PATH is not set correctly.  You can correct this by typing:
+~~~
+export JANA_PLUGIN_PATH=$JANA_PLUGIN_PATH:$EICrecon_MY/plugins
 ~~~
 
 The second plugin, JTest, just supplies dummy events. To generate your first histograms, edit the myFirstPluginProcessor.cc and myFirstPluginProcessor.h files (located in the myFirstPlugin directory). It should look similar to the one below: 
@@ -74,7 +99,7 @@ Next, edit the myFirstPluginProcessor.cc file to the following:
 extern "C" {
     void InitPlugin(JApplication *app) {
         InitJANAPlugin(app);
-        app->Add(new DaveTestProcessor);
+        app->Add(new myFirstPluginProcessor);
     }
 }
 
@@ -116,7 +141,22 @@ wget https://eicaidata.s3.amazonaws.com/2022-09-04_pgun_e-_podio-0.15_edm4hep-0.
 eicrecon -Pplugins=myFirstPlugin 2022-09-04_pgun_e-_podio-0.15_edm4hep-0.6_0-30GeV_alldir_1k.edm4hep.root
 ~~~
 
-You should now have a root file, eicrecon.root, with the resulting hEraw histogram inside of it.
+You should now have a root file, eicrecon.root, with a single directory: "myFirstPlugin" containing the resulting hEraw histogram.
+
+
+_____________________________________________________________________________________________________________
+
+As exercises try:
+
+Plot the positions of all the hits.  
+
+Repeat only for hits with energy greater than 0.005 GeV.  
+
+Now lets plot the energy of the clusters (hint: BEMC.so      edm4eic::Cluster                                       EcalBarrelClusters)
+
+And lets get the positions of the clusters
+
+Feel free to play around with other objects and their properties (hint: when you ran eicrecon, you should have seen a list of all the objects that were available to you.  You can also see this list by typing: eicrecon -Pplugins=myFirstPlugin -Pjana:nevents=0)
 
 
 
