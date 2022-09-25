@@ -14,9 +14,28 @@ keypoints:
 The JANA Framework is based on a series of factories.  Ultimately, plugins request widgets needed for analysis and via that request the factories JANA knows are spun up, as needed, to produce the desired widgets.
 So, you want to make a new widget? We need to make a new factory.  This factory will take in some set of input(s) and produce some set of output(s) (our shiny new widgets).
 
-To create a new factory we will use jana_generate.
+The jana-generate script can be called simply by typing: "jana-generate.py" followed by the type of thing you want the code skeleton for and additional arguments as needed. Valid things to produce the code skeleton for are:
 
-From the eic shell: "jana-generate.py JFactory myWidget"
+JObject
+
+JEventSource
+
+JEventProcessor
+
+RootEventProcessor
+
+JEventProcessorTest
+
+JFactory
+
+Plugin (this option has been deprecated in favor of eicmkplugin.py which will be used in the next lesson)
+
+Project
+
+From the eic shell: 
+~~~
+jana-generate.py JFactory myWidget
+~~~
 
 this will produce 2 files: JFactory_myWidget.h/.cc and a 3rd file: myWidget.h
 
@@ -31,6 +50,7 @@ The changeRun function is run before when a new run number is seen.  This is use
 Finally, we arrive at the meat of factory the Process function.  Here you ask the event for some ojects to form an input.  Then you do whatever computation you desire.  Then you store the results back to JANA.  
 
 Now, once compiled plugins can begin requesting "myWidget"s.
+
 
 
 {% include links.md %}
