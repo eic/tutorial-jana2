@@ -36,15 +36,15 @@ There is also [EICrecon project board][eicrecon-project] where one can see what 
 
 - Then create a branch out of the issue. 
 
-   ![Create branch from issue](../assets/img/contributing/create_branch_1.png)
+   ![Create branch from issue](./../assets/img/contributing/create_branch_1.png)
 
-   ![Create branch from issue](../assets/img/contributing/create_branch_2.png) 
+   ![Create branch from issue](./../assets/img/contributing/create_branch_2.png) 
 
 - After you commit and push changes to the branch, create a pull request (PR). As soon as PR is created a continious integration (CI) system will run to test the project compiles and runs on EIC environment. Any further push to this branch will trigger CI rerun the tests and check if merge is ready to be done. PRs are also a good place do discuss changes and code with collaborators. So it might be reasonable to create a PR even if not all work on issue is done. In this case create a Draft PR. 
 
-   ![Create branch from issue](../assets/img/contributing/create_branch_3.png)
+   ![Create branch from issue](./../assets/img/contributing/create_branch_3.png)
 
-   ![Create branch from issue](../assets/img/contributing/create_branch_4.png)
+   ![Create branch from issue](./../assets/img/contributing/create_branch_4.png)
 
    To summarize:
 
