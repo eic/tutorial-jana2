@@ -11,45 +11,179 @@ objectives:
 keypoints:
 - "Create a factory for reconstructing single subdetector data or for global reconstruction."
 ---
-The JANA Framework is based on a series of factories.  Ultimately, plugins request widgets needed for analysis and via that request the factories JANA knows are spun up, as needed, to produce the desired widgets.
-So, you want to make a new widget? We need to make a new factory.  This factory will take in some set of input(s) and produce some set of output(s) (our shiny new widgets).
 
-The jana-generate script can be called simply by typing: "jana-generate.py" followed by the type of thing you want the code skeleton for and additional arguments as needed. Valid things to produce the code skeleton for are:
+## Introduction
 
-JObject
 
-JEventSource
+Now that you've learned about JANA plugins and JEventProcessors, let's talk about JFactories. JFactories are another essential JANA component just like JEventProcessors. While JEventProcessors are used for _aggregating_ results from each event into a structured output such as a histogram or a file, JFactories are used for computing those results in an organized way.
 
-JEventProcessor
+In theory, you could calculate whatever results you need right in the body of your JEventProcessor's Process() method. However, JFactories are definitely the right way to go if your code is going to stick around for awhile, be used by multiple people, and/or be integrated into the EICrecon codebase itself. Here's why:
 
-RootEventProcessor
 
-JEventProcessorTest
+1. They make your code reusable. Different people can use your results later without having to understand the specifics of what you did.
 
-JFactory
+2. If you are consuming some data which doesn't look right to you, JFactories make it extremely easy to pinpoint exactly which code produced this data.
 
-Plugin (this option has been deprecated in favor of eicmkplugin.py which will be used in the next lesson)
+3. EICrecon needs to run multithreaded, and using JFactories can help steer you away from introducing thorny parallelism bugs.
 
-Project
+4. You can simply ask for the results you need and the JFactory will provide it. If nobody needs the results from the JFactory, it won't be run. If the results were already in the input file, it won't be run. If there are multiple consumers, the results are only computed once and then cached. If the JFactory relies on results from other JFactories, it will call them transparently and recursively. 
 
-From the eic shell: 
+
+
+## Algorithms vs Factories 
+
+In general, a Factory is a programming pattern for constructing objects in an abstract way. Oftentimes, the Factory is calling an algorithm under the hood. 
+This algorithm may be very generic. For instance, we may have a Factory that produces Cluster objects for a barrel calorimeter, and it calls a clustering algorithm 
+that doesn't care at all about barrel calorimeters, just the position and energy of energy of each CalorimeterHit object. Perhaps multiple factories for creating clusters 
+for completely different detectors are all using the same algorithm. 
+
+Note that Gaudi provides an abstraction called "Algorithm" which is essentially its own version of a JFactory. In EICrecon, we have been
+separating out _generic algorithms_ from the old Gaudi and new JANA code so that these can be developed and tested independently. In JANA, factories are uniquely identified by their 
+object type and their tag, which is just a string. The tag plays a similar role as the collection name in Gaudi. 
+
+
+## Parallelism considerations
+
+
+JEventProcessors observe the entire _event stream_, and require a _critical section_ where only one thread is allowed to modify a shared resource (such as a histogram) at any time. 
+JFactories, on the other hand, only observe a single event at a time, and work on each event independently. Each worker thread is given an independent event with its own set of factories. 
+This means that for a given JFactory instance, there will be only one thread working on one event at any time. You get the benefits of multithreading _without_ having to make each JFactory thread-safe.
+
+
+You can write JFactories in an almost-functional style, but you can also cache some data on the JFactory that will stick around from event-to-event. This is useful for things like conditions and geometry data, where for performance reasons you don't want to be doing a deep lookup on every event. Instead, you can write callbacks such as `BeginRun()`, where you can update your cached values when the run number changes. 
+
+
+Note that just because the JFactory _can_ be called in parallel doesn't mean it always will. If you call event->Get() from inside `JEventProcessor::ProcessSequential`, in particular, the factory will run
+single-threaded and slow everything down. However, if you call it using `Prefetch` instead, it will run in parallel and you may get a speed boost.
+
+
+** How do I use an existing JFactory? **
+
+Using an existing JFactory is extremely easy! Any time you are someplace where you have access to a `JEvent` object, do this:
+
+
+~~~ c++
+
+auto clusters = event->Get<edm4eic::Cluster>("EcalEndcapNIslandClusters");
+
+for (auto c : clusters) {
+  // ... do something with a cluster
+}
+
 ~~~
-jana-generate.py JFactory myWidget
+
+As you can see, it doesn't matter whether the `Cluster` objects were calculated from some simpler objects, or were simply loaded from a file. This is a very powerful concept. 
+
+One thing we might want to do is to swap one factory for another, possibly even at runtime. This is easy to do if you just make the factory tag be a parameter:
+
+
+~~~ c++
+
+std::string my_cluster_source = "EcalEndcapNIslandClusters";  // Make this be a parameter
+
+auto clusters = event->Get<edm4eic::Cluster>(my_cluster_source);
+
+for (auto c : clusters) {
+  // ... do something with a cluster
+}
+
 ~~~
 
-this will produce 2 files: JFactory_myWidget.h/.cc and a 3rd file: myWidget.h
+## How do I create a new JFactory?
 
-myWidget is a simple struct which holds the data for my widget. JFactory_myWidget.h holds our new factory's declarations.  Notice the class is public JFactoryT, it is going to produce the templated object, which in this case is "myWidget".  Perhaps your widgets come in different colors or require specific calibrations to produce; you can put any needed variables for the production of the widgets where it says "Insert member variables here". Note,  the variables held in myWidget do not need to be redundantly placed here. As public members JFactory_myWidget we have the constructor, an initialiation function, a function which is called when the run number changes and the main Process function.  You may place helper functions' declarations here as well. We will go into more detail of each function of the factory momentarily.
 
-Looking at JFactory_myWidget.cc we can see/fill out the declared function.  The constructor can do many things (e.g. initialize variables). It should, at the very least, set a tag.  This tag is used to access the objects created by the factory (which invokes the factory).
+~~~ c++
+class Cluster_factory_EcalEndcapNIslandClusters : public JFactoryT<edm4eic::Cluster> {
+public:
 
-The init function is called before any event is processed by the factory.  Here you would get needed parameters and services, setting an specific factory flags.  Any other "preprocessing" can be done here as well.
+    Cluster_factory_EcalEndcapNIslandClusters() {
+        SetTag("EcalEndcapNIslandClusters");
+    }
 
-The changeRun function is run before when a new run number is seen.  This is useful for Run dependent quatities, such as calirations.  Any other run-dependent action may be taken as well; such as creating a different widget color depending on run number (if this were a plugin you could plot the energy deposited for each runnumber).
 
-Finally, we arrive at the meat of factory the Process function.  Here you ask the event for some ojects to form an input.  Then you do whatever computation you desire.  Then you store the results back to JANA.  
+    void Init() override {
+        auto app = GetApplication();
 
-Now, once compiled plugins can begin requesting "myWidget"s.
+        // This is an example of how to declare a configuration parameter that
+        // can be set at run time. e.g. with -PEEMC:EcalEndcapNIslandClusters:scaleFactor=0.97
+        m_scaleFactor =0.98;
+        app->SetDefaultParameter("EEMC:EcalEndcapNIslandClusters:scaleFactor", m_scaleFactor, "Energy scale factor");
+
+        // This is how you access shared resources using the JService interface
+        m_log = app->GetService<Log_service>()->logger("JEventProcessorPODIO");
+    }
+
+
+    void Process(const std::shared_ptr<const JEvent> &event) override {
+
+    	log->info("Processing event {}", event->GetEventNumber());
+        // Grab inputs
+        auto protoclusters = event->Get<edm4eic::ProtoCluster>("EcalEndcapNIslandProtoClusters");
+
+        // Loop over protoclusters and turn each into a cluster
+        std::vector<edm4eic::Cluster*> outputClusters;
+        for( auto proto : protoclusters ) {
+
+        	// ======================
+        	// Algorithm goes here!
+
+        	// auto cluster = new edm4eic::Cluster( ... );
+            // outputClusters.push_back( cluster );
+        	// ======================
+        }
+
+        // Hand ownership of algorithm objects over to JANA
+        Set(outputClusters);
+    }
+
+private:
+    float m_scaleFactor;
+    std::shared_ptr<spdlog::logger> m_log;
+};
+
+~~~
+
+You can't pass JANA a JFactory directly (because it needs to create an arbitrary number of them on the fly). Instead you pass it a `JFactoryGenerator` object: 
+
+~~~ c++
+
+// In your plugin's init
+
+#include <JANA/JFactoryGenerator.h>
+// ...
+#include "ProtoCluster_factory_EcalEndcapNIslandProtoClusters.h"
+
+extern "C" {
+    void InitPlugin(JApplication *app) {
+        InitJANAPlugin(app);
+        // ...
+
+        app->Add(new JFactoryGeneratorT<Cluster_factory_EcalEndcapNIslandClusters>());
+     }
+
+~~~
+
+
+
+## How can I generate a JFactory skeleton?
+
+JANA comes with a script called `jana-generate.py` which lives in `$JANA_HOME/bin/jana-generate.py`. This script will generate skeletons for a number of different JANA components, including JFactories.
+Note that this doesn't have any customizations specific to EICrecon. Eventually we may add an EICrecon-specific skeleton, analogous to `eicmkplugin.py`. To generate a skeleton JFactory, run `jana-generate.py` like this:
+
+~~~ bash
+$ jana-generate.py JFactory edm4eic::Cluster EcalEndcapNIslandClustersImproved
+~~~
+
+- `edm4eic::Cluster` is the object name, a.k.a. the type of objects this factory produces. 
+- `EcalEndcapNIslandClustersImproved` is the "tag" or collection name. 
+
+
+This generates `.cc` and `.h` files for your new factory. 
+Note that it also generates a stub definition of "edm4eic::Cluster.h", which we definitely _don't_ want, so just delete that file.
+Also note that in EICrecon, we've adopted the naming convention "ObjectName_factory_CollectionName", which this version of the script does _not_ do yet. So go ahead and rename it.
+
+Anyway, you now have a stub factory! Feel free to play around with it.
+
 
 
 
