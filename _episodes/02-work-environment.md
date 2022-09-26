@@ -28,6 +28,7 @@ curl --location https://get.epic-eic.org | bash
 ./eic-shell
 
 # or, if /cvmfs is available: 
+# n.b. on JLab ifarm you may need to do 'module load singularity/3.9.5' first
 
 singularity exec /cvmfs/singularity.opensciencegrid.org/eicweb/jug_xl:nightly eic-shell
 
