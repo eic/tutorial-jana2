@@ -20,7 +20,7 @@ The eickmkplugin script can be called simply by typing: "eicmkplugin.py" followe
 
 Inside the source code for your plugin is a fairly simple class.  The private data members should contain the necessary variables to successfully run your plugin;  this will likely include any histograms, canvases, fits or other accoutrement. The public section contains the required Constructor, Init, Process, and Finish functions.  In init we get the application, as well as initialize any variables or histograms (etc etc).  The Process function typically gets objects from the event and does something with them (e.g. fill the histogram of cluster energy). And finally Finish is called where we clean up and do final things like writing the resulting root files.
 
-To begin, start by setting your EICrecon_MY environment variable to a directory where you have write permission. The build instructinos will install the plugin to that directory. When eicrecon is run, it will also look for plugins in the $EICrecon_MY directory and the EICrecon build you are using.
+To begin, start by setting your EICrecon_MY environment variable to a directory where you have write permission. The build instructinos will install the plugin to that directory. When eicrecon is run, it will also look for plugins in the $EICrecon_MY directory and the EICrecon build you are using. This step is easy to overlook but necessary for the plugin to be found once compiled.
 
 ~~~
 mkdir EICrecon_MY
@@ -59,12 +59,8 @@ You can test plugin installed and can load correctly by runnign eicrecon with it
 ~~~
 eicrecon -Pplugins=myFirstPlugin,JTest -Pjana:nevents=10
 ~~~
-If you recieve an error that the plugin is not found your JANA_PLUGIN_PATH is not set correctly.  You can correct this by typing:
-~~~
-export JANA_PLUGIN_PATH=$JANA_PLUGIN_PATH:$EICrecon_MY/plugins
-~~~
 
-The second plugin, JTest, just supplies dummy events. To generate your first histograms, edit the myFirstPluginProcessor.cc and myFirstPluginProcessor.h files (located in the myFirstPlugin directory). It should look similar to the one below: 
+The second plugin, JTest, just supplies dummy events, ensuring your plugin is findable. To generate your first histograms, let's edit the myFirstPluginProcessor.cc and myFirstPluginProcessor.h files (located in the myFirstPlugin directory). Start by modifying myFirstPluginProcessor.h.  In the end it should look similar to the one below: 
 
 ```c++
 #include <JANA/JEventProcessorSequentialRoot.h>
