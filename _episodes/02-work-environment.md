@@ -154,7 +154,7 @@ To see a list of possible collections, run *eicrecon -L* .
 
 ### Exercise 3
 
-Use *eicrecon* to generate an output file with both *ReconstructedParticles* and *EcalEndcapNrawHits*
+Use *eicrecon* to generate an output file with both *ReconstructedParticles* and *EcalEndcapNRawHits*
 
 
 
