@@ -8,7 +8,7 @@ objectives:
 - "Clone EICrecon repository and build with eic-shell."
 - "Obtain a simulated data file."
 keypoints:
-- "First key point. Brief Answer to questions. (FIXME)"
+- "Use eicrecon executable to run reconstruction on a podio input file and to create podio output file."
 ---
 
 ## How do I setup a work environment for EICrecon?
@@ -119,9 +119,6 @@ of values. The file format is one parameter per line with one or more spaces sep
 configuration parameter name and its value. Empty lines are OK and "#" can be used to specify
 comments.
 
-### Exercise 2
-FIXME
-
 
 ## Get a simulated data file
 The third tutorial in this series described how to generate a simulated data file. If you
@@ -130,17 +127,35 @@ you can grab an existing simulted data file fro mthe web for the purposes of thi
 This will grab a 226MB file:
 
 ```console
-wget https://eicaidata.s3.amazonaws.com/2022-09-04_pgun_e-_podio-0.15_edm4hep-0.6_0-30GeV_alldir_1k.edm4hep.root
+wget https://eicaidata.s3.amazonaws.com/2022-09-26_ncdis10x100_minq2-1_100ev.edm4hep.root
 ```
 
-### Exercise 3:
+### Exercise 2:
 
 Run `eicrecon` over your simulated data file by giving it as an argument to the program.
 e.g.
 
 ```console
-eicrecon 2022-09-04_pgun_e-_podio-0.15_edm4hep-0.6_0-30GeV_alldir_1k.edm4hep.root
+eicrecon 2022-09-26_ncdis10x100_minq2-1_100ev.edm4hep.root
 ```
+
+
+## Generating a podio output file
+To write reconstructed values to an output file, you need to tell *eicrecon* what to write. 
+There are several options available, but the mosrt useful one is *podio:output_include_collections*.
+This is a comma separated list of colelctions to write to the output file. For example:
+
+```console
+eicrecon -Ppodio:output_include_collections=ReconstructedParticles 2022-09-26_ncdis10x100_minq2-1_100ev.edm4hep.root
+```
+
+To see a list of possible collections, run *eicrecon -L* .
+
+### Exercise 3
+
+Use *eicrecon* to generate an output file with both *ReconstructedParticles* and *EcalBarrelIslandProtoClusters*
+
+
 
 {% include links.md %}
 
