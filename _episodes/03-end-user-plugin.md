@@ -148,15 +148,15 @@ ________________________________________________________________________________
 
 As exercises try:
 
-Plot the positions of all the hits.  
+1) Plot the positions of all the hits.  
 
-Repeat only for hits with energy greater than 0.005 GeV.  
+2) Repeat only for hits with energy greater than 0.005 GeV.  
 
-Now lets plot the energy of the clusters (hint: BEMC.so      edm4eic::Cluster                                       EcalBarrelClusters)
-
-And lets get the positions of the clusters
+3) Try to plot similar histograms from the EcalEndcap.
 
 Feel free to play around with other objects and their properties (hint: when you ran eicrecon, you should have seen a list of all the objects that were available to you.  You can also see this list by typing: eicrecon -Pplugins=myFirstPlugin -Pjana:nevents=0)
+
+Note: very shortly you will be adding a factory.  After you do come back to this plugin and access your newly created objects
 
 
 
