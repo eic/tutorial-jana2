@@ -128,11 +128,18 @@ void myFirstPluginProcessor::FinishWithGlobalRootLock() {
     // Do any final calculations here.
 }
 ```
+Before we continue, stop for a moment and remember that plugins are compiled objects.  Thus it is imperative we rebuild our plugin after making any changes.  To do this, we can simply run the same commands we used to build the plugin in the first place:
+
+~~~
+cmake -S myFirstPlugin -B myFirstPlugin/build
+cmake --build myFirstPlugin/build --target install
+~~~
+
 You can test the plugin using the following simulated data file:
 
 ~~~bash
-wget https://eicaidata.s3.amazonaws.com/2022-09-04_pgun_e-_podio-0.15_edm4hep-0.6_0-30GeV_alldir_1k.edm4hep.root
-eicrecon -Pplugins=myFirstPlugin 2022-09-04_pgun_e-_podio-0.15_edm4hep-0.6_0-30GeV_alldir_1k.edm4hep.root
+wget https://eicaidata.s3.amazonaws.com/2022-09-26_ncdis10x100_minq2-1_200ev.edm4hep.root
+eicrecon -Pplugins=myFirstPlugin 2022-09-26_ncdis10x100_minq2-1_200ev.edm4hep.root
 ~~~
 
 You should now have a root file, eicrecon.root, with a single directory: "myFirstPlugin" containing the resulting hEraw histogram.
@@ -140,19 +147,17 @@ You should now have a root file, eicrecon.root, with a single directory: "myFirs
 
 _____________________________________________________________________________________________________________
 
-As exercises try:
+As exercises try (make sure you rebuild everytime you change your plugin):
 
-1) Plot the positions of all the hits.  
+1) Plot the X,Y positions of all the hits.  
 
 2) Repeat only for hits with energy greater than 0.005 GeV.  
 
-3) Try to plot similar histograms from the EcalEndcap.
+3) Try to plot similar histograms from the EcalEndcapN.
 
 Feel free to play around with other objects and their properties (hint: when you ran eicrecon, you should have seen a list of all the objects that were available to you.  You can also see this list by typing: eicrecon -Pplugins=myFirstPlugin -Pjana:nevents=0)
 
 Note: very shortly you will be adding a factory.  After you do come back to this plugin and access your newly created objects
-
-
 
 
 {% include links.md %}
