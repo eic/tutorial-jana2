@@ -51,9 +51,13 @@ This algorithm may be very generic. For instance, we may have a Factory that pro
 that doesn't care at all about barrel calorimeters, just the position and energy of energy of each CalorimeterHit object. Perhaps multiple factories for creating clusters 
 for completely different detectors are all using the same algorithm. 
 
-Note that Gaudi provides an abstraction called "Algorithm" which is essentially its own version of a JFactory. In EICrecon, we have been
-separating out _generic algorithms_ from the old Gaudi and new JANA code so that these can be developed and tested independently. In JANA, factories are uniquely identified by their 
-object type and their tag, which is just a string. The tag plays a similar role as the collection name in Gaudi. 
+Note that Gaudi provides an abstraction called "Algorithm" which is essentially its own version of a JFactory. In EICrecon, we have been separating out _generic algorithms_ from the old Gaudi and new JANA code so that these can be developed and tested independently. To see an example of how a generic algorithm is being implemented, look at these examples:
+
+src/detectors/EEMC/RawCalorimeterHit_factory_EcalEndcapNRawHits.h
+src/algorithms/calorimetry/CalorimeterHitDigi.h
+src/algorithms/calorimetry/CalorimeterHitDigi.cc
+
+Using generic algorithms makes things slightly more complex. However, the generic algorithms can be recycled for use in multiple detector systems which adds some simplification.
 
 
 ## Parallelism considerations
