@@ -15,10 +15,24 @@ keypoints:
 ## Introduction
 
 
-Now that you've learned about JANA plugins and JEventProcessors, let's talk about JFactories. JFactories are another essential JANA component just like JEventProcessors. While JEventProcessors are used for _aggregating_ results from each event into a structured output such as a histogram or a file, JFactories are used for computing those results in an organized way.
+Now that you've learned about JANA plugins and JEventProcessors, let's talk about JFactories. JFactories are another essential JANA component just like JEventProcessors and JEventSources. While JEventProcessors are used for _aggregating_ results from each event into a structured output such as a histogram or a file, JFactories are used for computing those results in an organized way. 
 
-In theory, you could calculate whatever results you need right in the body of your JEventProcessor's Process() method. However, JFactories are definitely the right way to go if your code is going to stick around for awhile, be used by multiple people, and/or be integrated into the EICrecon codebase itself. Here's why:
+### When do I use a JFactory?
 
+- If you have an input file and need to read data model objects from it, use a JEventSource
+- If you have an output file (or histogram) and wish to write data model objects to it, use a JEventProcessor
+- If you have some data model objects and wish to produce a new data model object, use a JFactory.
+
+
+### When do I create my own plugin?
+
+- If you are doing a one-off prototype, it's fine to just use a ROOT macro.
+- If you are writing code you'll probably return to, we recommend putting the code in a standalone (i.e. outside of the EICrecon source tree) plugin.
+- If you are writing code other people will probably want to run, we recommend adding our plugin to the EICrecon source tree.
+- If you are writing a JFactory, we recommend adding it to the EICrecon source tree, either to an existing plugin or to a new one.
+
+
+### Why should I prefer writing a JFactory?
 
 1. They make your code reusable. Different people can use your results later without having to understand the specifics of what you did.
 
@@ -46,18 +60,16 @@ object type and their tag, which is just a string. The tag plays a similar role 
 
 
 JEventProcessors observe the entire _event stream_, and require a _critical section_ where only one thread is allowed to modify a shared resource (such as a histogram) at any time. 
-JFactories, on the other hand, only observe a single event at a time, and work on each event independently. Each worker thread is given an independent event with its own set of factories. 
-This means that for a given JFactory instance, there will be only one thread working on one event at any time. You get the benefits of multithreading _without_ having to make each JFactory thread-safe.
+JFactories, on the other hand, only observe a single event at a time, and work on each event independently. Each worker thread is given an independent event with its own set of factories. This means that for a given JFactory instance, there will be only one thread working on one event at any time. You get the benefits of multithreading _without_ having to make each JFactory thread-safe.
 
 
 You can write JFactories in an almost-functional style, but you can also cache some data on the JFactory that will stick around from event-to-event. This is useful for things like conditions and geometry data, where for performance reasons you don't want to be doing a deep lookup on every event. Instead, you can write callbacks such as `BeginRun()`, where you can update your cached values when the run number changes. 
 
 
-Note that just because the JFactory _can_ be called in parallel doesn't mean it always will. If you call event->Get() from inside `JEventProcessor::ProcessSequential`, in particular, the factory will run
-single-threaded and slow everything down. However, if you call it using `Prefetch` instead, it will run in parallel and you may get a speed boost.
+Note that just because the JFactory _can_ be called in parallel doesn't mean it always will. If you call event->Get() from inside `JEventProcessor::ProcessSequential`, in particular, the factory will run single-threaded and slow everything down. However, if you call it using `Prefetch` instead, it will run in parallel and you may get a speed boost.
 
 
-** How do I use an existing JFactory? **
+## How do I use an existing JFactory? ##
 
 Using an existing JFactory is extremely easy! Any time you are someplace where you have access to a `JEvent` object, do this:
 
@@ -80,43 +92,116 @@ One thing we might want to do is to swap one factory for another, possibly even 
 ~~~ c++
 
 std::string my_cluster_source = "EcalEndcapNIslandClusters";  // Make this be a parameter
-
+app->SetDefaultParameter("MyPlugin:MyAnalysis:my_cluster_source", my_cluster_source, "Cluster source for MyAnalysis");
 auto clusters = event->Get<edm4eic::Cluster>(my_cluster_source);
-
-for (auto c : clusters) {
-  // ... do something with a cluster
-}
-
 ~~~
 
 ## How do I create a new JFactory?
 
+We are going to add a new JFactory inside EICrecon. 
 
+`src/detectors/EEMC/Cluster_factory_EcalEndcapNIslandClusters.h`:
 ~~~ c++
+#pragma once
+#include <JANA/JFactoryT.h>
+#include <edm4eic/Cluster.h>
+#include <services/log>
+
 class Cluster_factory_EcalEndcapNIslandClusters : public JFactoryT<edm4eic::Cluster> {
 public:
 
-    Cluster_factory_EcalEndcapNIslandClusters() {
-        SetTag("EcalEndcapNIslandClusters");
+    Cluster_factory_EcalEndcapNIslandClusters(); // Constructor
+
+    void Init() override;  
+    // Gets called exactly once at the beginning of the JFactory's life
+
+    void ChangeRun(const std::shared_ptr<const JEvent> &event) override {};
+    // Gets called on events where the run number has changed (before Process())
+
+    void Process(const std::shared_ptr<const JEvent> &event) override;
+    // Gets called on every event
+
+    void Finish() override {};
+    // Gets called exactly once at the end of the JFactory's life
+
+private:
+    float m_scaleFactor;
+    std::shared_ptr<spdlog::logger> m_log;
+
+};
+
+~~~
+
+`src/detectors/EEMC/Cluster_factory_EcalEndcapNIslandClusters.cc`:
+~~~ c++
+#include "Cluster_factory_EcalEndcapNIslandClusters.h"
+
+#include <edm4eic/ProtoCluster.h>
+#include <JANA/JEvent.h>
+
+
+Cluster_factory_EcalEndcapNIslandClusters::Cluster_factory_EcalEndcapNIslandClusters() {
+
+    SetTag("EcalEndcapNIslandClusters");
+}
+
+
+void Cluster_factory_EcalEndcapNIslandClusters::Init() override {
+    auto app = GetApplication();
+
+    // This is an example of how to declare a configuration parameter that
+    // can be set at run time. e.g. with -PEEMC:EcalEndcapNIslandClusters:scaleFactor=0.97
+    m_scaleFactor =0.98;
+    app->SetDefaultParameter("EEMC:EcalEndcapNIslandClusters:scaleFactor", m_scaleFactor, "Energy scale factor");
+
+    // This is how you access shared resources using the JService interface
+    m_log = app->GetService<Log_service>()->logger("JEventProcessorPODIO");
+}
+
+
+void Process(const std::shared_ptr<const JEvent> &event) override {
+
+    log->info("Processing event {}", event->GetEventNumber());
+
+    // Grab inputs
+    auto protoclusters = event->Get<edm4eic::ProtoCluster>("EcalEndcapNIslandProtoClusters");
+
+    // Loop over protoclusters and turn each into a cluster
+    std::vector<edm4eic::Cluster*> outputClusters;
+    for( auto proto : protoclusters ) {
+
+        // ======================
+        // Algorithm goes here!
+        // ======================
+
+        auto cluster = new edm4eic::Cluster(
+            0, // type 
+            energy * m_scaleFactor,
+            sqrt(energyError_squared),
+            time,
+            timeError,
+            proto->hits_size(),
+            position,
+            edm4eic::Cov3f(), // positionError,
+            0.0,              // intrinsicTheta,
+            0.0,              // intrinsicPhi,
+            edm4eic::Cov2f()  // intrinsicDirectionError
+            );
+
+        outputClusters.push_back( cluster );
     }
 
-
-    void Init() override {
-        auto app = GetApplication();
-
-        // This is an example of how to declare a configuration parameter that
-        // can be set at run time. e.g. with -PEEMC:EcalEndcapNIslandClusters:scaleFactor=0.97
-        m_scaleFactor =0.98;
-        app->SetDefaultParameter("EEMC:EcalEndcapNIslandClusters:scaleFactor", m_scaleFactor, "Energy scale factor");
-
-        // This is how you access shared resources using the JService interface
-        m_log = app->GetService<Log_service>()->logger("JEventProcessorPODIO");
-    }
+    // Hand ownership of algorithm objects over to JANA
+    Set(outputClusters);
+}
 
 
-    void Process(const std::shared_ptr<const JEvent> &event) override {
+~~~
 
-    	log->info("Processing event {}", event->GetEventNumber());
+We can now fill in the algorithm with anything we like!
+
+
+~~~ c++
         // Grab inputs
         auto protoclusters = event->Get<edm4eic::ProtoCluster>("EcalEndcapNIslandProtoClusters");
 
@@ -124,27 +209,63 @@ public:
         std::vector<edm4eic::Cluster*> outputClusters;
         for( auto proto : protoclusters ) {
 
-        	// ======================
-        	// Algorithm goes here!
+            // Fill cumulative values by looping over all hits in proto cluster
+            float energy = 0;
+            double energyError_squared = 0.0;
+            float time = 1.0E8;
+            float timeError;
+            edm4hep::Vector3f position;
+            double sum_weights = 0.0;
+            for( uint32_t ihit=0; ihit<proto->hits_size() ; ihit++){
+                auto const &hit = proto->getHits(ihit);
+                auto weight = proto->getWeights(ihit);
+                energy += hit.getEnergy();
+                energyError_squared += std::pow(hit.getEnergyError(), 2.0);
+                if( hit.getTime() < time ){
+                    time = hit.getTime();            // use earliest time
+                    timeError = hit.getTimeError();  // use error of earliest time
+                }
+                auto &p = hit.getPosition();
+                position.x += p.x*weight;
+                position.y += p.y*weight;
+                position.z += p.z*weight;
+                sum_weights += weight;
+            }
+            
+            // Normalize position
+            position.x /= sum_weights;
+            position.y /= sum_weights;
+            position.z /= sum_weights;
 
-        	// auto cluster = new edm4eic::Cluster( ... );
-            // outputClusters.push_back( cluster );
-        	// ======================
+            // Create a cluster object from values accumulated from hits above
+            auto cluster = new edm4eic::Cluster(
+                0, // type (?))
+                energy * m_scaleFactor,
+                sqrt(energyError_squared),
+                time,
+                timeError,
+                proto->hits_size(),
+                position,
+
+                // Not sure how to calculate these last few
+                edm4eic::Cov3f(), // positionError,
+                0.0, // intrinsicTheta,
+                0.0, // intrinsicPhi,
+                edm4eic::Cov2f() // intrinsicDirectionError
+                );
+
+            outputClusters.push_back( cluster );
         }
 
         // Hand ownership of algorithm objects over to JANA
         Set(outputClusters);
-    }
-
-private:
-    float m_scaleFactor;
-    std::shared_ptr<spdlog::logger> m_log;
-};
 
 ~~~
 
-You can't pass JANA a JFactory directly (because it needs to create an arbitrary number of them on the fly). Instead you pass it a `JFactoryGenerator` object: 
 
+You can't pass JANA a JFactory directly (because it needs to create an arbitrary number of them on the fly). Instead you register a `JFactoryGenerator` object: 
+
+`src/detectors/EEMC.cc`
 ~~~ c++
 
 // In your plugin's init
@@ -163,27 +284,14 @@ extern "C" {
 
 ~~~
 
-
-
-## How can I generate a JFactory skeleton?
-
-JANA comes with a script called `jana-generate.py` which lives in `$JANA_HOME/bin/jana-generate.py`. This script will generate skeletons for a number of different JANA components, including JFactories.
-Note that this doesn't have any customizations specific to EICrecon. Eventually we may add an EICrecon-specific skeleton, analogous to `eicmkplugin.py`. To generate a skeleton JFactory, run `jana-generate.py` like this:
+Finally, we go ahead and trigger the factory (remember, factories won't do anything unless activated by a JEventProcessor). You can open the 
 
 ~~~ bash
-$ jana-generate.py JFactory edm4eic::Cluster EcalEndcapNIslandClustersImproved
+eicrecon in.root -Ppodio:output_file=out.root -Ppodio:output_include_collections=EcalEndcapNIslandClusters -Pjana:nevents=10
 ~~~
 
-- `edm4eic::Cluster` is the object name, a.k.a. the type of objects this factory produces. 
-- `EcalEndcapNIslandClustersImproved` is the "tag" or collection name. 
 
-
-This generates `.cc` and `.h` files for your new factory. 
-Note that it also generates a stub definition of "edm4eic::Cluster.h", which we definitely _don't_ want, so just delete that file.
-Also note that in EICrecon, we've adopted the naming convention "ObjectName_factory_CollectionName", which this version of the script does _not_ do yet. So go ahead and rename it.
-
-Anyway, you now have a stub factory! Feel free to play around with it.
-
+Your exercise is to get this JFactory working! You can tweak the algorithm, add log messages, add additional config parameters, etc.
 
 
 
