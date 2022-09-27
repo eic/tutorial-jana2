@@ -107,9 +107,10 @@ We are going to add a new JFactory inside EICrecon.
 `src/detectors/EEMC/Cluster_factory_EcalEndcapNIslandClusters.h`:
 ~~~ c++
 #pragma once
-#include <JANA/JFactoryT.h>
+
 #include <edm4eic/Cluster.h>
-#include <services/log>
+#include <JANA/JFactoryT.h>
+#include <services/log/Log_service.h>
 
 class Cluster_factory_EcalEndcapNIslandClusters : public JFactoryT<edm4eic::Cluster> {
 public:
@@ -150,7 +151,7 @@ Cluster_factory_EcalEndcapNIslandClusters::Cluster_factory_EcalEndcapNIslandClus
 }
 
 
-void Cluster_factory_EcalEndcapNIslandClusters::Init() override {
+void Cluster_factory_EcalEndcapNIslandClusters::Init() {
     auto app = GetApplication();
 
     // This is an example of how to declare a configuration parameter that
@@ -159,13 +160,13 @@ void Cluster_factory_EcalEndcapNIslandClusters::Init() override {
     app->SetDefaultParameter("EEMC:EcalEndcapNIslandClusters:scaleFactor", m_scaleFactor, "Energy scale factor");
 
     // This is how you access shared resources using the JService interface
-    m_log = app->GetService<Log_service>()->logger("JEventProcessorPODIO");
+    m_log = app->GetService<Log_service>()->logger("EcalEndcapNIslandClusters");
 }
 
 
-void Process(const std::shared_ptr<const JEvent> &event) override {
+void Cluster_factory_EcalEndcapNIslandClusters::Process(const std::shared_ptr<const JEvent> &event) {
 
-    log->info("Processing event {}", event->GetEventNumber());
+    m_log->info("Processing event {}", event->GetEventNumber());
 
     // Grab inputs
     auto protoclusters = event->Get<edm4eic::ProtoCluster>("EcalEndcapNIslandProtoClusters");
@@ -269,14 +270,14 @@ We can now fill in the algorithm with anything we like!
 
 You can't pass JANA a JFactory directly (because it needs to create an arbitrary number of them on the fly). Instead you register a `JFactoryGenerator` object: 
 
-`src/detectors/EEMC.cc`
+`src/detectors/EEMC/EEMC.cc`
 ~~~ c++
 
 // In your plugin's init
 
 #include <JANA/JFactoryGenerator.h>
 // ...
-#include "ProtoCluster_factory_EcalEndcapNIslandProtoClusters.h"
+#include "Cluster_factory_EcalEndcapNIslandClusters.h"
 
 extern "C" {
     void InitPlugin(JApplication *app) {
