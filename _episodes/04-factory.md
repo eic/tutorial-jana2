@@ -14,9 +14,7 @@ keypoints:
 
 ## Introduction
 
-
 Now that you've learned about JANA plugins and JEventProcessors, let's talk about JFactories. JFactories are another essential JANA component just like JEventProcessors and JEventSources. While JEventProcessors are used for _aggregating_ results from each event into a structured output such as a histogram or a file, JFactories are used for computing those results in an organized way. 
-
 
 ### When do I use a JFactory?
 
