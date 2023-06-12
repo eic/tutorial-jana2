@@ -12,6 +12,11 @@ keypoints:
 - "Plugins can be used to generate custom histograms by attaching directly to the reconstruction process."
 - "Plugins can be used for monitoring or custom analysis."
 ---
+> Note: The following episode presents a somewhat outdated view, and some commands may not function.
+> If you are only interested in analyzing already-reconstructed data, then there is no requirement
+> to use a plugin as described below; the output ROOT file works too.
+{: .callout}
+
 Plugins are the basic building blocks when it comes to analyzing data.  They request objects and perform actions, such as making histograms, or writing out certain objects to files.  When your plugin requests objects (e.g. clusters) the factory responsible for the requested object is loaded and run (We will dive into factories in the next exciting episode of how to use JANA).  When running EICrecon you will configure it to use some number of plugins (each potentially with their own set of configuration parameters). Now, let us begin constructing a new plugin.
 
 To do this we will use the eicmkplugin.py script that comes with EICrecon.  This utility should be your "go-to" for jumpstarting your work with EICrecon/JANA when it comes to data. To put eicmkplugin.py in your path, you can do the following:

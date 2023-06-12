@@ -11,6 +11,10 @@ objectives:
 keypoints:
 - "Create a factory for reconstructing single subdetector data or for global reconstruction."
 ---
+> Note: The following episode presents a somewhat outdated view, and some commands may not function.
+> If you are only interested in analyzing already-reconstructed data, then there is no requirement
+> to use a plugin as described below; the output ROOT file works too.
+{: .callout}
 
 ## Introduction
 
