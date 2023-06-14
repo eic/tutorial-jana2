@@ -136,7 +136,7 @@ There are several options available, but the mosrt useful one is *podio:output_i
 This is a comma separated list of colelctions to write to the output file. For example:
 
 ```console
-eicrecon -Ppodio:output_include_collections=ReconstructedParticles 2022-09-26_ncdis10x100_minq2-1_100ev.edm4hep.root
+eicrecon -Ppodio:output_include_collections=ReconstructedParticles pythia8NCDIS_10x100_minQ2=1_beamEffects_xAngle=-0.025_hiDiv.edm4hep.root
 ```
 
 To see a list of possible collections, run `eicrecon -L`.
