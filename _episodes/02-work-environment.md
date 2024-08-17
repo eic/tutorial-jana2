@@ -132,11 +132,11 @@ ddsim -N 100 \
 
 ## Generating a podio output file
 To write reconstructed values to an output file, you need to tell *eicrecon* what to write. 
-There are several options available, but the mosrt useful one is *podio:output_include_collections*.
+There are several options available, but the mosrt useful one is *podio:output_collections*.
 This is a comma separated list of colelctions to write to the output file. For example:
 
 ```console
-eicrecon -Ppodio:output_include_collections=ReconstructedParticles pythia8NCDIS_10x100_minQ2=1_beamEffects_xAngle=-0.025_hiDiv.edm4hep.root
+eicrecon -Ppodio:output_collections=ReconstructedParticles pythia8NCDIS_10x100_minQ2=1_beamEffects_xAngle=-0.025_hiDiv.edm4hep.root
 ```
 
 To see a list of possible collections, run `eicrecon -L`.
