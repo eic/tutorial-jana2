@@ -118,7 +118,7 @@ you can quickly generate a small file with the following command:
 ddsim -N 100 \
   --compactFile $DETECTOR_PATH/$DETECTOR_CONFIG.xml \
   --outputFile pythia8NCDIS_10x100_minQ2=1_beamEffects_xAngle=-0.025_hiDiv.edm4hep.root \
-  --inputFile root://dtn-eic.jlab.org//work/eic2/EPIC/Tutorials/pythia8NCDIS_10x100_minQ2=1_beamEffects_xAngle=-0.025_hiDiv.hepmc3.tree.root
+  --inputFile root://dtn-eic.jlab.org//volatile/eic/EPIC/Tutorials/pythia8NCDIS_10x100_minQ2=1_beamEffects_xAngle=-0.025_hiDiv.hepmc3.tree.root
 ```
 > Note: The backslash characters, `\`, allow the line to be continued on the next line.
 {: .callout}
