@@ -151,7 +151,7 @@ you can quickly generate a small file with the following command:
 ddsim -N 100 \
   --compactFile $DETECTOR_PATH/$DETECTOR_CONFIG.xml \
   --outputFile pythia8NCDIS_10x100_minQ2=1_beamEffects_xAngle=-0.025_hiDiv.edm4hep.root \
-  --inputFile root://dtn-eic.jlab.org//volatile/eic/EPIC/Tutorials/pythia8NCDIS_10x100_minQ2=1_beamEffects_xAngle=-0.025_hiDiv.hepmc3.tree.root
+  --inputFile root://dtn-eic.jlab.org//volatile/eic/EPIC/EVGEN/DIS/NC/10x100/minQ2=1/pythia8NCDIS_10x100_minQ2=1_beamEffects_xAngle=-0.025_hiDiv_1.hepmc3.tree.root
 ```
 
 ::::::::::::::::::::::::::::::::::::::::::::: callout

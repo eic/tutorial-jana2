@@ -21,6 +21,11 @@ exercises: 20
 ::::::::::::::::::::::::::::::::::::::::::::: callout
 
 Note: The following episode presents a somewhat outdated view, and some commands may not function.
+In particular, the `eicmkplugin.py` helper script used below **is no longer shipped with the
+`eic-shell` container / EICrecon**, so the `eicmkplugin.py myFirstPlugin` step will not work as
+written. For the current, supported way to create and build an EICrecon plugin, follow the plugin
+documentation in the [EICrecon repository](https://github.com/eic/EICrecon).
+
 If you are only interested in analyzing already-reconstructed data, then there is no requirement
 to use a plugin as described below; **just analyze output ROOT file directly instead**.
 
