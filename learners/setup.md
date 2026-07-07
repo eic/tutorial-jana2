@@ -1,7 +1,9 @@
 ---
 title: Setup
 ---
+
 In advance of the training session, please ensure that
+
 - You have a GitHub account ([sign up here](https://github.com/signup))
 - Your GitHub account is a member of the [EIC organization](https://github.com/eic) on GitHub
   - Email [the EICUG SWG conveners](mailto:eicug-software-conveners@eicug.org) with your GitHub account to be added
@@ -15,5 +17,4 @@ In advance of the training session, please ensure that
     - `docker run --rm -it alpine`
   - Software Carpentry [Incubator Singularity](https://carpentries-incubator.github.io/singularity-introduction/) training (optional)
   - HEP Software Foundation [Docker](https://hsf-training.github.io/hsf-training-docker/index.html) training (optional)
-
-{% include links.md %}
+- You have completed the [Setting Up Your EIC Environment](https://eic.github.io/tutorial-setting-up-environment/) tutorial and can start `eic-shell`

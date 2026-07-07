@@ -1,0 +1,30 @@
+# This CITATION.cff file provides information used to cite this lesson.
+# Visit https://citation-file-format.github.io/ for the format reference,
+# and update the author list and other fields as the lesson develops.
+
+cff-version: 1.2.0
+title: 'Reconstruction Algorithms in JANA2 (ePIC tutorial)'
+message: >-
+  Please cite this lesson using the information in this file
+  when you refer to it in publications, and/or if you
+  re-use, adapt, or expand on the content in your own
+  training material.
+type: dataset
+authors:
+  - given-names: David
+    family-names: Lawrence
+  - name: The ePIC Collaboration
+abstract: >-
+  An ePIC tutorial on building algorithms and plugins in JANA2 to expand and use
+  the EICrecon reconstruction software. Built with The Carpentries Workbench.
+keywords:
+  - EIC
+  - ePIC
+  - EICrecon
+  - JANA2
+  - reconstruction
+  - plugin
+  - factory
+  - eic-shell
+repository-code: 'https://github.com/eic/tutorial-jana2'
+license: CC-BY-4.0
