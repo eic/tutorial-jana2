@@ -1,16 +1,17 @@
 ---
-layout: lesson
-root: .  # Is the only page that doesn't follow the pattern /:path/index.html
-permalink: index.html  # Is the only page that doesn't follow the pattern /:path/index.html
+site: sandpaper::sandpaper_site
 ---
-Welcome to the EIC Tutorial on Reconstruction Algorithms in JANA2
 
-This will show you how to build algorithms and plugins in JANA2 to expand and use 
-the EPIC reconstruction software.
+Welcome to the EIC Tutorial on Reconstruction Algorithms in JANA2!
 
-> ## Prerequisites
->
-> Please take a look in the setup section for necessary prerequisites for this lesson.
-{: .prereq}
+This tutorial shows you how to build algorithms and plugins in JANA2 to expand and use the ePIC
+reconstruction software (EICrecon).
 
-{% include links.md %}
+::::::::::::::::::::::::::::::::::::::::::::: prereq
+
+## Prerequisites
+
+Please take a look at the [Setup](learners/setup.md) page for necessary prerequisites for this
+lesson.
+
+:::::::::::::::::::::::::::::::::::::::::::::
