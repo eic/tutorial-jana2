@@ -145,13 +145,13 @@ to set this yourself. If you need to though, these are how you do it.
 The [Simulations with npsim and Geant4 tutorial](https://eic.github.io/tutorial-simulations-using-npsim-and-geant4/)
 described how to generate a simulated data file. If you
 followed the exercises in that tutorial you can use a file you generated there. If not, then
-you can quickly generate a small file with the following command:
+you can quickly generate a small file with the following command, with the input location from [Rucio](https://eic.github.io/tutorial-file-access/):
 
 ```bash
 ddsim -N 100 \
   --compactFile $DETECTOR_PATH/$DETECTOR_CONFIG.xml \
   --outputFile pythia8NCDIS_10x100_minQ2=1_beamEffects_xAngle=-0.025_hiDiv.edm4hep.root \
-  --inputFile root://dtn2304.jlab.org:8443//jlab-osdf-ro/eic/EPIC/volatile/EVGEN/DIS/NC/10x100/minQ2=1/pythia8NCDIS_10x100_minQ2=1_beamEffects_xAngle=-0.025_hiDiv_1.hepmc3.tree.root
+  --inputFile $(rucio replica list file --protocols root --pfns --rses isopenaccess epic:/EVGEN/DIS/NC/10x100/minQ2=1/pythia8NCDIS_10x100_minQ2=1_beamEffects_xAngle=-0.025_hiDiv_1.hepmc3.tree.root | head -1)
 ```
 
 ::::::::::::::::::::::::::::::::::::::::::::: callout
